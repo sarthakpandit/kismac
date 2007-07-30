@@ -1,9 +1,10 @@
+*Home Page
+
 =Kismac=
 
 == Introduction ==
 
 This page was set up to keep the source code of kismac up as long as possible
-
 
 
 
