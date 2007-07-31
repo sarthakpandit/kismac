@@ -16,7 +16,8 @@
 	[bpfdevice setStringValue:[controller objectForKey:@"bpfdevice"]];
 	[bpfloc setStringValue:[controller objectForKey:@"bpfloc"]];
 	[pr_interval setIntValue:[[controller objectForKey:@"pr_interval"] intValue]];
-	[show_debugmenu setState:[[controller objectForKey:@"DebugMode"] intValue]];
+	[kismetserverip setStringValue:[controller objectForKey:@"kismetserverip"]];
+	[kismetserverport setIntValue:[[controller objectForKey:@"kismetserverport"] intValue]];
 }
 
 -(BOOL)updateDictionary {
@@ -25,7 +26,8 @@
 	[controller setObject:[bpfdevice stringValue] forKey:@"bpfdevice"];
 	[controller setObject:[bpfloc stringValue] forKey:@"bpfloc"];
 	[controller setObject:[NSNumber numberWithInt:[pr_interval intValue]] forKey:@"pr_interval"];
-	[controller setObject:[NSNumber numberWithInt:[show_debugmenu state]] forKey:@"DebugMode"];
+	[controller setObject:[kismetserverip stringValue] forKey:@"kismetserverip"];
+	[controller setObject:[NSNumber numberWithInt:[kismetserverport intValue]] forKey:@"kismetserverport"];
     return YES;
 }
 
@@ -40,8 +42,10 @@
 		[controller setObject:[bpfloc stringValue] forKey:@"bpfloc"];
     } else if(sender == pr_interval) {
        [controller setObject:[NSNumber numberWithInt:[pr_interval intValue]] forKey:@"pr_interval"];
-	} else if(sender == show_debugmenu) {
-		[controller setObject:[NSNumber numberWithInt:[show_debugmenu state]] forKey:@"DebugMode"];
+	} else if(sender == kismetserverip) {
+		[controller setObject:[kismetserverip stringValue] forKey:@"kismetserverip"];
+	} else if(sender == kismetserverport) {
+		[controller setObject:[NSNumber numberWithInt:[kismetserverport intValue]] forKey:@"kismetserverport"];
 	} else {
         NSLog(@"Error: Invalid sender(%@) in setValueForSender:",sender);
     }
@@ -53,7 +57,8 @@
 	[bpfdevice setStringValue:@"wlt1"];
 	[bpfloc setStringValue:@"/dev/bpf0"];
 	[pr_interval setIntValue:100];
-	[show_debugmenu setState:NSOffState];
+	[kismetserverip setStringValue:@"127.0.0.1"];
+	[kismetserverport setIntValue:2501];
 }
 
 @end

@@ -30,11 +30,7 @@
 #import "Apple80211.h"
 
 static bool explicitlyLoadedAirportExtremeDriver = NO;
-static NSString *airportExtremeBundleID = nil;
 WirelessContextPtr gWCtxt = NULL;
-
-static NSString *kAppleAirPort2Path = @"/System/Library/Extensions/AppleAirPort2.kext/Contents/Info.plist";
-static NSString *kAppleAirPortBrcm4311Path = @"/System/Library/Extensions/IO80211Family.kext/Contents/PlugIns/AppleAirPortBrcm4311.kext/Contents/Info.plist";
 
 @implementation WaveDriverAirportExtreme
 
@@ -73,14 +69,13 @@ static NSString *kAppleAirPortBrcm4311Path = @"/System/Library/Extensions/IO8021
 	NSDictionary *dict;
 	NSData *fileData;
 	
-	fileData = [NSData dataWithContentsOfFile:kAppleAirPort2Path];
+	fileData = [NSData dataWithContentsOfFile:@"/System/Library/Extensions/AppleAirPort2.kext/Contents/Info.plist"];
 	dict = [NSPropertyListSerialization propertyListFromData:fileData mutabilityOption:kCFPropertyListImmutable format:NULL errorDescription:Nil];
 	if ([[dict valueForKeyPath:@"IOKitPersonalities.Broadcom PCI.APMonitorMode"] boolValue]) return YES;
 	
-	fileData = [NSData dataWithContentsOfFile:kAppleAirPortBrcm4311Path];
+	fileData = [NSData dataWithContentsOfFile:@"/System/Library/Extensions/IO80211Family.kext/Contents/PlugIns/AppleAirPortBrcm4311.kext/Contents/Info.plist"];
 	dict = [NSPropertyListSerialization propertyListFromData:fileData mutabilityOption:kCFPropertyListImmutable format:NULL errorDescription:Nil];
-	if ([[dict valueForKeyPath:@"IOKitPersonalities.Broadcom PCI.APMonitorMode"] boolValue] ||
-		[[[[dict objectForKey:@"IOKitPersonalities"] objectForKey:@"Broadcom 802.11 PCI"] objectForKey:@"APMonitorMode"] boolValue]) return YES;
+	if ([[dict valueForKeyPath:@"IOKitPersonalities.Broadcom PCI.APMonitorMode"] boolValue]) return YES;
 	
 	return NO;
 }
@@ -92,10 +87,7 @@ static NSString *kAppleAirPortBrcm4311Path = @"/System/Library/Extensions/IO8021
 	
 	[NSThread sleep:1.0];
 	NSDictionary *dict = [NSPropertyListSerialization propertyListFromData:[NSData dataWithContentsOfFile:fileName] mutabilityOption:kCFPropertyListMutableContainers format:NULL errorDescription:Nil];
-	if ([dict valueForKeyPath:@"IOKitPersonalities.Broadcom PCI"])
-		[dict setValue:[NSNumber numberWithBool:enable] forKeyPath:@"IOKitPersonalities.Broadcom PCI.APMonitorMode"];
-	if ([[dict objectForKey:@"IOKitPersonalities"] objectForKey:@"Broadcom 802.11 PCI"])
-		[[[dict objectForKey:@"IOKitPersonalities"] objectForKey:@"Broadcom 802.11 PCI"] setValue:[NSNumber numberWithBool:enable] forKey:@"APMonitorMode"];
+	[dict setValue:[NSNumber numberWithBool:enable] forKeyPath:@"IOKitPersonalities.Broadcom PCI.APMonitorMode"];
 	[[NSPropertyListSerialization dataFromPropertyList:dict format:kCFPropertyListXMLFormat_v1_0 errorDescription:nil] writeToFile:fileName atomically:NO];
 		
 	[[BLAuthentication sharedInstance] executeCommand:@"/bin/chmod" withArgs:[NSArray arrayWithObjects:@"0644", fileName, nil]];
@@ -108,8 +100,8 @@ static NSString *kAppleAirPortBrcm4311Path = @"/System/Library/Extensions/IO8021
 	NSUserDefaults *defs;
     
     defs = [NSUserDefaults standardUserDefaults];
-    [WaveDriverAirportExtreme setMonitorMode:enable forFile:kAppleAirPort2Path];
-	[WaveDriverAirportExtreme setMonitorMode:enable forFile:kAppleAirPortBrcm4311Path];
+    [WaveDriverAirportExtreme setMonitorMode:enable forFile:@"/System/Library/Extensions/AppleAirPort2.kext/Contents/Info.plist"];
+	[WaveDriverAirportExtreme setMonitorMode:enable forFile:@"/System/Library/Extensions/IO80211Family.kext/Contents/PlugIns/AppleAirPortBrcm4311.kext/Contents/Info.plist"];
 	
 	if ([[defs objectForKey:@"aeForever"] boolValue]) {
 		[[BLAuthentication sharedInstance] executeCommand:@"/bin/rm" withArgs:[NSArray arrayWithObject:@"/System/Library/Extensions.kextcache"]];
@@ -121,11 +113,11 @@ static NSString *kAppleAirPortBrcm4311Path = @"/System/Library/Extensions/IO8021
 + (int) initBackend {
 	BOOL ret;
     int x;
+    NSString *kextFile;
 	
     NSUserDefaults *defs;
     
-	if([WaveHelper isServiceAvailable:"AirPort_Athr5424"] || [WaveHelper isServiceAvailable:"AirPort_Athr5424ab"])
-    {
+	if([WaveHelper isServiceAvailable:"AirPort_Athr5424"]) {
 		NSLog(@"User has a Atheros card.");
 		return 0;
 		NSRunCriticalAlertPanel(
@@ -135,7 +127,7 @@ static NSString *kAppleAirPortBrcm4311Path = @"/System/Library/Extensions/IO8021
 		return 2;
 	}
 	
-	if(![WaveHelper isServiceAvailable:"AirPortPCI_MM"] && ![WaveHelper isServiceAvailable:"AirPort_Brcm43xx"]) {
+	if(![WaveHelper isServiceAvailable:"AirPortPCI_MM"]) {
 		NSLog(@"User has no Broadcom card.");
 		NSRunCriticalAlertPanel(
 		NSLocalizedString(@"Could not enable Monitor Mode for Airport Extreme.", "Error dialog title"),
@@ -146,10 +138,10 @@ static NSString *kAppleAirPortBrcm4311Path = @"/System/Library/Extensions/IO8021
 	
 	if([[NSFileManager defaultManager] fileExistsAtPath:@"/System/Library/Extensions/IO80211Family.kext"]) {
 		NSLog(@"Enabling for new Intel Mac");
-		airportExtremeBundleID = @"com.apple.driver.AirPortBrcm43xx";
+		kextFile = @"/System/Library/Extensions/IO80211Family.kext/Contents/PlugIns/AppleAirPortBrcm4311.kext";
 	} else {
 		NSLog(@"Enabling for Mac of the old school");
-		airportExtremeBundleID = @"com.apple.iokit.AppleAirPort2";
+		kextFile = @"/System/Library/Extensions/AppleAirPort2.kext";
 	}
 
 	
@@ -170,7 +162,7 @@ static NSString *kAppleAirPortBrcm4311Path = @"/System/Library/Extensions/IO8021
             return 2;
         }
 
-        ret = [[BLAuthentication sharedInstance] executeCommand:@"/sbin/kextunload" withArgs:[NSArray arrayWithObjects:@"-b", airportExtremeBundleID, nil]];
+        ret = [[BLAuthentication sharedInstance] executeCommand:@"/sbin/kextunload" withArgs:[NSArray arrayWithObjects:@"-b", @"com.apple.iokit.AppleAirPort2", nil]];
         if (!ret) {
             NSLog(@"WARNING!!! User canceled password dialog for: kextunload");
             return 2;
@@ -179,14 +171,14 @@ static NSString *kAppleAirPortBrcm4311Path = @"/System/Library/Extensions/IO8021
 	
         for (x=0; x<5; x++) {
             [NSThread sleep:1.0];
-            [[BLAuthentication sharedInstance] executeCommand:@"/sbin/kextload" withArgs:[NSArray arrayWithObjects:@"-b", airportExtremeBundleID, nil]];
+            [[BLAuthentication sharedInstance] executeCommand:@"/sbin/kextload" withArgs:[NSArray arrayWithObject:kextFile]];
 		
             if ([WaveDriverAirportExtreme deviceAvailable]) return 0;
         }
-        [[BLAuthentication sharedInstance] executeCommand:@"/sbin/kextunload" withArgs:[NSArray arrayWithObjects:@"-b", airportExtremeBundleID, nil]];
+        [[BLAuthentication sharedInstance] executeCommand:@"/sbin/kextunload" withArgs:[NSArray arrayWithObjects:@"-b", @"com.apple.iokit.AppleAirPort2", nil]];
         for (x=0; x<5; x++) {
             [NSThread sleep:1.0];
-            [[BLAuthentication sharedInstance] executeCommand:@"/sbin/kextload" withArgs:[NSArray arrayWithObjects:@"-b", airportExtremeBundleID, nil]];
+            [[BLAuthentication sharedInstance] executeCommand:@"/sbin/kextload" withArgs:[NSArray arrayWithObject:kextFile]];
     
             if ([WaveDriverAirportExtreme deviceAvailable]) return 0;
         }
@@ -231,16 +223,21 @@ static NSString *kAppleAirPortBrcm4311Path = @"/System/Library/Extensions/IO8021
 
 + (bool) unloadBackend {
 	BOOL ret;
+	NSString *kextFile;
 	
     if (explicitlyLoadedAirportExtremeDriver) {
-		ret = [[BLAuthentication sharedInstance] executeCommand:@"/sbin/kextunload" withArgs:[NSArray arrayWithObjects:@"-b", airportExtremeBundleID, nil]];
+		ret = [[BLAuthentication sharedInstance] executeCommand:@"/sbin/kextunload" withArgs:[NSArray arrayWithObjects:@"-b", @"com.apple.iokit.AppleAirPort2", nil]];
 		if (!ret) {
 			NSLog(@"WARNING!!! User canceled password dialog for: kextunload");
 			return NO;
 		}
-		
+		if([[NSFileManager defaultManager] fileExistsAtPath:@"/System/Library/Extensions/IO80211Family.kext"]) {
+			kextFile = @"/System/Library/Extensions/IO80211Family.kext/Contents/PlugIns/AppleAirPortBrcm4311.kext";
+		} else {
+			kextFile = @"/System/Library/Extensions/AppleAirPort2.kext";
+		}
 		[WaveDriverAirportExtreme setMonitorMode:NO];
-		[[BLAuthentication sharedInstance] executeCommand:@"/sbin/kextload" withArgs:[NSArray arrayWithObjects:@"-b", airportExtremeBundleID, nil]];
+		[[BLAuthentication sharedInstance] executeCommand:@"/sbin/kextload" withArgs:[NSArray arrayWithObject:kextFile]];
 
 		[NSThread sleep:1.0];
 	}
@@ -258,23 +255,21 @@ static NSString *kAppleAirPortBrcm4311Path = @"/System/Library/Extensions/IO8021
     defs = [NSUserDefaults standardUserDefaults];
     char err[PCAP_ERRBUF_SIZE];
 	
-	if([WaveHelper isServiceAvailable:"AirPort_Athr5424"] || [WaveHelper isServiceAvailable:"AirPort_Athr5424ab"] )
-    {
+	if([WaveHelper isServiceAvailable:"AirPort_Athr5424"]) {
 		_apeType = APExtTypeAth5414;
-	} else if([WaveHelper isServiceAvailable:"AirPortPCI_MM"] || [WaveHelper isServiceAvailable:"AirPort_Brcm43xx"]) {
+	} else if([WaveHelper isServiceAvailable:"AirPortPCI_MM"]) {
 		_apeType = APExtTypeBcm;
 	} else {
 		_apeType = APExtTypeUnknown;
 	}
 	
-    //pcap_open_live(char *device,int snaplen, int prmisc,int to_ms,char *ebuf)
-	_device = pcap_open_live([[defs objectForKey:@"bpfdevice"] cString], 3000, 1, 2, err);
+	_device = pcap_open_live([[defs objectForKey:@"bpfdevice"] cString], 3000, 0, 2, err);
 	if (!_device) {
 		if (![[BLAuthentication sharedInstance] executeCommand:@"/usr/bin/chgrp" withArgs:[NSArray arrayWithObjects:@"admin", [defs objectForKey:@"bpfloc"], nil]]) return Nil;
 		if (![[BLAuthentication sharedInstance] executeCommand:@"/bin/chmod" withArgs:[NSArray arrayWithObjects:@"0660", [defs objectForKey:@"bpfloc"], nil]]) return Nil;
 		[NSThread sleep:0.5];
 	
-		_device = pcap_open_live([[defs objectForKey:@"bpfdevice"] cString], 3000, 1, 2, err);
+		_device = pcap_open_live([[defs objectForKey:@"bpfdevice"] cString], 3000, 0, 2, err);
 		[[BLAuthentication sharedInstance] executeCommand:@"/usr/bin/chgrp" withArgs:[NSArray arrayWithObjects:@"wheel", [defs objectForKey:@"bpfloc"], nil]];
 		[[BLAuthentication sharedInstance] executeCommand:@"/bin/chmod" withArgs:[NSArray arrayWithObjects:@"0600", [defs objectForKey:@"bpfloc"], nil]];
 

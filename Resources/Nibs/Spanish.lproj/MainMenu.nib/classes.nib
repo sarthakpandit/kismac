@@ -127,8 +127,6 @@
                 importNetstumbler = id; 
                 injectPackets = id; 
                 joinNetwork = id; 
-                monitorAllNetworks = id; 
-                monitorSignal = id; 
                 openDonateURL = id; 
                 openPCAPInEthereal = id; 
                 openWebsiteURL = id; 
@@ -161,8 +159,6 @@
                 "_mapButton" = NSButton; 
                 "_mapView" = NSView; 
                 "_mappingView" = MapView; 
-                "_monitorAllMenu" = NSMenuItem; 
-                "_monitorMenu" = NSMenuItem; 
                 "_netHierarchDrawer" = NSDrawer; 
                 "_networkTable" = ColoredRowTableView; 
                 "_networkView" = NSView; 
