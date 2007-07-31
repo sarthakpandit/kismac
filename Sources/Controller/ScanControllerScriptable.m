@@ -266,14 +266,6 @@
     return NO;
 }
 
-- (BOOL)exportKML:(NSString*)filename {
-    NSParameterAssert(filename);
-    filename = [filename standardPath];
-    [self showBusy:@selector(performExportKML:) withArg:filename];
-    if (_asyncFailure) [self showExportFailureDialog];
-    return !_asyncFailure;
-}
-
 - (BOOL)downloadMapFrom:(NSString*)server forPoint:(waypoint)w resolution:(NSSize)size zoomLevel:(int)zoom {
     NSImage *map;
     MapDownload *md;
@@ -423,7 +415,7 @@
 - (BOOL)bruteforceNewsham {
     WEPCHECKS;
     
-	_crackType = 6;
+	_crackType = 2;
     [self startCrackDialogWithTitle:NSLocalizedString(@"Performing Newsham attack...", "busy dialog")];
     [_importController setMax:127];
     

@@ -38,7 +38,6 @@
 
 #import "WaveContainer.h"
 #import "GPSController.h"
-#import "GPSInfoController.h"
 #import "ImportController.h"
 
 /*
@@ -76,7 +75,6 @@ static NSMutableDictionary *_probes = Nil;
 static Trace *_trace;
 static ImportController *_im;
 static ScanController *_scanController;
-static GPSInfoController *_gc;
 
 //converts a byte count to a human readable string
 + (NSString*) bytesToString:(float) bytes {
@@ -226,9 +224,7 @@ static GPSInfoController *_gc;
         if (![self isServiceAvailable:"AiroJackDriver"]) return NO;
         else return YES;
     case 4:
-        if ([self isServiceAvailable:"AirPortDriver"] || [self isServiceAvailable:"AirPortPCI"] ||
-            [self isServiceAvailable:"AirPortPCI_MM"] || [self isServiceAvailable:"AirPort_Brcm43xx"]  ||
-            [WaveHelper isServiceAvailable:"AirPort_Athr5424"] || [self isServiceAvailable:"AirPort_Athr5424ab"]) return YES;
+        if ([self isServiceAvailable:"AirPortDriver"] || [self isServiceAvailable:"AirPortPCI"] || [self isServiceAvailable:"AirPortPCI_MM"]  || [WaveHelper isServiceAvailable:"AirPort_Athr5424"]) return YES;
         else return NO;
     default:
         return NO;
@@ -441,14 +437,6 @@ static GPSInfoController *_gc;
 
 + (void) setScanController:(ScanController*)scanController {
     _scanController=scanController;
-}
-
-+ (GPSInfoController*) GPSInfoController {
-	return _gc;
-}
-
-+ (void) setGPSInfoController:(GPSInfoController*)GPSController {
-    _gc=GPSController;
 }
 
 + (GPSController*) gpsController {

@@ -29,7 +29,6 @@
 #import "WaveHelper.h"
 #import "KisMACNotifications.h"
 #import "Trace.h"
-#import "GPSInfoController.h"
 
 #include <stdio.h>
 #include <fcntl.h>
@@ -44,6 +43,7 @@
 #include <netdb.h>
 #include <string.h>
 #include <errno.h>
+
 #include <sys/termios.h>
 
 struct termios ttyset;
@@ -203,20 +203,22 @@ struct termios ttyset;
 						NSLocalizedString(@"Time", "GPS status string."), 
 						[self lastUpdate],[self QualData]];
             else
-                return [NSString stringWithFormat:@"%@: %@ %@\n%@: %@\n%@: %@%@", 
+                return [NSString stringWithFormat:@"%@: %@ %@\n%@: %@\n%@: %@%@%@", 
                         NSLocalizedString(@"Position", "GPS status string."), 
                         [self NSCoord],[self EWCoord],
                         NSLocalizedString(@"Elevation", "GPS status string."), 
                         [self ElevCoord],
 						NSLocalizedString(@"Time", "GPS status string."), 
 						[self lastUpdate],
-                        _reliable ? [self QualData] : NSLocalizedString(@" -- NO FIX", "GPS status string. Needs leading space")];
+                        _reliable ? @"" : NSLocalizedString(@" -- NO FIX", "GPS status string. Needs leading space"),
+                        [self QualData]];
         else
-            return [NSString stringWithFormat:@"%@: %@ %@\n%@", 
+            return [NSString stringWithFormat:@"%@: %@ %@\n%@%@", 
                 NSLocalizedString(@"Position", "GPS status string."), 
                 [self NSCoord],[self EWCoord],
                 [self lastUpdate],
-                _reliable ? [self QualData] : NSLocalizedString(@" -- NO FIX", "GPS status string. Needs leading space")];
+                _reliable ? @"" : NSLocalizedString(@" -- NO FIX", "GPS status string. Needs leading space"),
+				[self QualData]];
 
     else if ([(NSString*)[[NSUserDefaults standardUserDefaults] objectForKey:@"GPSDevice"] length]) {
         if (_gpsThreadUp) return NSLocalizedString(@"GPS subsystem works, but there is no data.\nIf you are using gpsd, there may be no GPS connected.\nOtherwise, your GPS is probably connected but not yet reporting a position.", "GPS status string");
@@ -345,7 +347,6 @@ int ss(char* inp, char* outp) {
     bool updated;
     NSDate *date;
     NSAutoreleasePool* subpool = [[NSAutoreleasePool alloc] init];
-	GPSInfoController *asdf = [WaveHelper GPSInfoController];
 
     if (_debugEnabled) NSLog(@"GPS read data");
     if (q>=1024) q = 0; //just in case something went wrong
@@ -402,62 +403,7 @@ int ss(char* inp, char* outp) {
                 if (_debugEnabled) NSLog(@"GPS data updated.");  
                 updated = YES;
             }
-		} else if(strncmp(gpsbuf, "$GPGSV", 6) == 0) {  //satellites and signals
-			int nmsgs,tmsg,satsinview,prn1,elev1,azi1,snr1,prn2,elev2,azi2,snr2,prn3,elev3,azi3,snr3,prn4,elev4,azi4,snr4; 
-            sscanf(gpsbuf, "%*[^,],%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
-                &nmsgs, &tmsg, &satsinview, 
-				&prn1, &elev1, &azi1, &snr1, 
-				&prn2, &elev2, &azi2, &snr2,
-				&prn3, &elev3, &azi3, &snr3,
-				&prn4, &elev4, &azi4, &snr4);
-			NSLog(@"nmesgs %i, tmsg %i, satsinview %i, sat1 prn %i signal %i, sat2 prn %i signal %i, sat3 prn %i signal %i, sat4 prn %i signal %i",
-			nmsgs,tmsg,satsinview,prn1,snr1,prn2,snr2,prn3,snr3,prn4,snr4);
-			if (asdf != NULL)
-			{
-			
-			if (prn1 < 200) {// it's obviousy dodgy if it's 200 or higher
-			[asdf updateSatSignalStrength:((tmsg - 1) * 4) signal:snr1];
-			[asdf updateSatPRNForSat:((tmsg - 1) * 4) prn:prn1];
-			[asdf updateSatUsed:((tmsg - 1) * 4) used:1];
-			} else {
-			[asdf updateSatSignalStrength:((tmsg - 1) * 4) signal:0];
-			[asdf updateSatPRNForSat:((tmsg - 1) * 4) prn:0];
-			[asdf updateSatUsed:((tmsg - 1) * 4) used:0];
-			}
-			
-			if (prn2 < 200) {
-			[asdf updateSatSignalStrength:(((tmsg - 1) * 4) + 1) signal:snr2];
-			[asdf updateSatPRNForSat:(((tmsg - 1) * 4) + 1) prn:prn2];
-			[asdf updateSatUsed:(((tmsg - 1) * 4) + 1) used:1];
-			} else {
-			[asdf updateSatSignalStrength:(((tmsg - 1) * 4) + 1) signal:0];
-			[asdf updateSatPRNForSat:(((tmsg - 1) * 4) + 1) prn:0];
-			[asdf updateSatUsed:(((tmsg - 1) * 4) + 1) used:0];
-			}
-			
-			if (prn3 < 200) {
-			[asdf updateSatSignalStrength:(((tmsg - 1) * 4) + 2) signal:snr3];
-			[asdf updateSatPRNForSat:(((tmsg - 1) * 4) + 2) prn:prn3];
-			[asdf updateSatUsed:(((tmsg - 1) * 4) + 2) used:1];
-			} else {
-			[asdf updateSatSignalStrength:(((tmsg - 1) * 4) + 2) signal:0];
-			[asdf updateSatPRNForSat:(((tmsg - 1) * 4) + 2) prn:0];
-			[asdf updateSatUsed:(((tmsg - 1) * 4) + 2) used:0];
-			}
-									
-			if (prn4 < 200) {
-			[asdf updateSatSignalStrength:(((tmsg - 1) * 4) + 3) signal:snr4];
-			[asdf updateSatPRNForSat:(((tmsg - 1) * 4) + 3) prn:prn4];
-			[asdf updateSatUsed:(((tmsg - 1) * 4) + 3) used:1];
-			} else {
-			[asdf updateSatSignalStrength:(((tmsg - 1) * 4) + 3) signal:snr4];
-			[asdf updateSatPRNForSat:(((tmsg - 1) * 4) + 3) prn:prn4];
-			[asdf updateSatUsed:(((tmsg - 1) * 4) + 3) used:1];
-			}
-			
-			}
-		}
-		
+        }
         
         x+=strlen(gpsbuf)+1;
     }
@@ -529,12 +475,6 @@ int ss(char* inp, char* outp) {
             [[WaveHelper trace] cut];
         }
     }
-
-	
-	if (asdf != NULL)
-	{
-		[asdf updateDataNS:_ns.coordinates EW:_ew.coordinates ELV:_elev.coordinates numSats:_numsat HDOP:_hdop VEL:_velkt];
-	}
     
     [date release];
     [subpool release];
@@ -545,7 +485,6 @@ int ss(char* inp, char* outp) {
 - (bool)gpsd_parse:(int) fd {
     int len, valid, numsat, veldir;
     char gpsbuf[MAX_GPSBUF_LEN];
-	char gpsbufII[MAX_GPSBUF_LEN];
     double ns, ew, elev;
 	float velkt,hdop,fveldir;
 	float timeinterval=-1;
@@ -571,7 +510,6 @@ int ss(char* inp, char* outp) {
     _linesRead++;
     
     gpsbuf[0+len]=0;
-	gpsbufII[0+len]=0;
  	numsat = -1;
 	hdop = 100;
 	elev = 0;
@@ -588,132 +526,71 @@ int ss(char* inp, char* outp) {
 		
 		timeinterval = [date timeIntervalSinceDate:_lastUpdate];
         [WaveHelper secureReplace:&_lastUpdate withObject:date];
-    } else {
-		_reliable = NO;
-    }
 
-	if ((_reliable)||(_onNoFix==0)) {
-		if (ns >= 0) _ns.dir = 'N';
-		else _ns.dir = 'S';
-		
-		if (ew >= 0) _ew.dir = 'E';
-		else _ew.dir = 'W';
-		
-		_ns.coordinates   = fabs(ns);
-		_ew.coordinates   = fabs(ew);
-		_elev.coordinates = elev;
-		if ((velkt > 0) && (_velkt==0)) {
-			_peakvel = 0;
-			_sectordist = 0;
-			_sectortime = 0;
-			[WaveHelper secureReplace:&_sectorStart withObject:date];
-		} else if ((velkt > 0) || (_velkt > 0)) {
-			// update distances only if we're moving (or just stopped)
-			displacement = (velkt + _velkt)*timeinterval/7200;
-			_sectordist += displacement;
-			_sectortime += timeinterval;
-			_totaldist += displacement;
-		}
-		_velkt = velkt;
-		veldir = (int)fveldir;
-		_veldir = veldir;
-		if (velkt > _peakvel) _peakvel = velkt;
-		if (velkt > _maxvel) _maxvel = velkt;
 
-		if (numsat > -1) {
-			_numsat = numsat;
-			_hdop = hdop;
-		}
-	} else if(_onNoFix==2) {
-		_ns.dir = 'N';
-		_ew.dir = 'E';
-		
-		_elev.coordinates = -10000;
-		_ns.coordinates = 100;
-		_ew.coordinates = 0;
-		_velkt = 0;
-	}
-
-	if (_reliable) {
-		if (([_lastUpdate timeIntervalSinceDate:_lastAdd]>_traceInterval) && (_traceInterval != 100)) {
-			waypoint w;
-			w._lat  = _ns.coordinates * ((_ns.dir=='N') ? 1.0 : -1.0);
-			w._long = _ew.coordinates * ((_ew.dir=='E') ? 1.0 : -1.0);
-			if ([[WaveHelper trace] addPoint:w]) [WaveHelper secureReplace:&_lastAdd withObject:date];
-		}
-	} else {
-		[[WaveHelper trace] cut];
-	}
-
-    GPSInfoController *asdf = [WaveHelper GPSInfoController];
-	
-	if (asdf != NULL)
-	{
-		[asdf updateDataNS:_ns.coordinates EW:_ew.coordinates ELV:_elev.coordinates numSats:_numsat HDOP:_hdop VEL:_velkt];
-	
-		
-		////////////////////////////////////////////////////////////////////////////
-		// start of satellite PRN gathering
-
-		NSString *gpsbuf2, *thisprn;
-		NSRange range,range2;
-		int satnum;
-		int length;
-		int prn,signal,used;
-		NSArray *prns,*attrs;
-	
-		if (write(fd, "Y\r\n", 3) < 3) {
-			NSLog(@"GPSd write failed");
-			return NO;
-		}
-    
-		if((len = read(fd, &gpsbufII[0], MAX_GPSBUF_LEN)) < 0) {
-			NSLog(@"GPSd read failed");
-			return NO;
-		}
-
-		@try {
-			gpsbuf2	= [NSString stringWithCString:gpsbufII length:len];
-			
-			range = [gpsbuf2 rangeOfString:@":"];
-			range2 = NSMakeRange(range.location - 2,2);
-			satnum = [[gpsbuf2 substringWithRange:range2] intValue];
-			prns = [gpsbuf2 componentsSeparatedByString:@":"];
-			
-			length = [prns count];
-			unsigned item; 
-			for (item = 1; item <= 12; item++)
-			{
-				if (item < length - 1) {
-					thisprn = [prns objectAtIndex:item];
-					attrs = [thisprn componentsSeparatedByString:@" "];
-					prn = [[attrs objectAtIndex:0] intValue];
-					signal = [[attrs objectAtIndex:3] intValue];
-					used = [[attrs objectAtIndex:4] intValue];
-					[asdf updateSatSignalStrength:item signal:signal];
-					[asdf updateSatPRNForSat:item prn:prn];
-					[asdf updateSatUsed:item used:used];
-					// pass out used
-				} else {
-					[asdf updateSatPRNForSat:item prn:0];
-					[asdf updateSatSignalStrength:item signal:-1];
-				}
+        if ((_reliable)||(_onNoFix==0)) {
+            if (ns >= 0) _ns.dir = 'N';
+            else _ns.dir = 'S';
+            
+            if (ew >= 0) _ew.dir = 'E';
+            else _ew.dir = 'W';
+            
+            _ns.coordinates   = fabs(ns);
+            _ew.coordinates   = fabs(ew);
+            _elev.coordinates = elev;
+			if ((velkt > 0) && (_velkt==0)) {
+				_peakvel = 0;
+				_sectordist = 0;
+				_sectortime = 0;
+				[WaveHelper secureReplace:&_sectorStart withObject:date];
+			} else if ((velkt > 0) || (_velkt > 0)) {
+				// update distances only if we're moving (or just stopped)
+				displacement = (velkt + _velkt)*timeinterval/7200;
+				_sectordist += displacement;
+				_sectortime += timeinterval;
+				_totaldist += displacement;
 			}
-		}
-		@catch (NSException *exception) {
-		unsigned item; 
-		for (item = 1; item <= 12; item++) {
-			[asdf updateSatPRNForSat:item prn:0];
-			[asdf updateSatSignalStrength:item signal:-1];
-		}
-	}
-	}
-	[date release];
-	[subpool release];
-	return YES;
+			_velkt = velkt;
+			veldir = (int)fveldir;
+			_veldir = veldir;
+			if (velkt > _peakvel) _peakvel = velkt;
+			if (velkt > _maxvel) _maxvel = velkt;
+
+			if (numsat > -1) {
+				_numsat = numsat;
+				_hdop = hdop;
+			}
+		} else if(_onNoFix==2) {
+            _ns.dir = 'N';
+            _ew.dir = 'E';
+            
+            _elev.coordinates = -10000;
+            _ns.coordinates = 100;
+            _ew.coordinates = 0;
+            _velkt = 0;
+        }
+
+		if (_reliable) {
+            if (([_lastUpdate timeIntervalSinceDate:_lastAdd]>_traceInterval) && (_traceInterval != 100)) {
+                waypoint w;
+                w._lat  = _ns.coordinates * ((_ns.dir=='N') ? 1.0 : -1.0);
+                w._long = _ew.coordinates * ((_ew.dir=='E') ? 1.0 : -1.0);
+                if ([[WaveHelper trace] addPoint:w]) [WaveHelper secureReplace:&_lastAdd withObject:date];
+            }
+        } else {
+            [[WaveHelper trace] cut];
+        }
+
+    } else {
+// be quiet for now
+//        NSLog(@"GPSd parsing failure - received: %s",gpsbuf);
+    }
+    
+    [date release];
+    [subpool release];
+
+    return YES;
 }
-
-
 
 - (void) continousParse:(int) fd {
     NSDate *date;

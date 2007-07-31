@@ -30,7 +30,6 @@
 #import "ScanHierarch.h"
 #import "PrefsController.h"
 #import "GrowlController.h"
-#import "GPSInfoController.h"
 //sleep studd
 #include <mach/mach_port.h>
 #include <mach/mach_interface.h>
@@ -137,26 +136,20 @@ io_connect_t  root_port;    // a reference to the Root Power Domain IOService
     IBOutlet NSMenuItem         *_deauthMenu;
 	IBOutlet NSMenuItem			*_deauthAllMenu;
     IBOutlet NSMenuItem         *_authFloodMenu;
-	IBOutlet NSMenuItem			*_monitorMenu;
-	IBOutlet NSMenuItem			*_monitorAllMenu;
     IBOutlet NSMenuItem         *aInjPacketsMenu;
     IBOutlet NSMenuItem         *_showNetInMap;
     IBOutlet NSMenuItem         *_showAllNetsInMap;
-	IBOutlet NSMenuItem			*_fullscreen;
     
     IBOutlet NSMenuItem         *_showNetworks;
     IBOutlet NSMenuItem         *_showTraffic;
     IBOutlet NSMenuItem         *_showMap;
     IBOutlet NSMenuItem         *_showDetails;
     IBOutlet NSMenuItem         *_showHierarch;
-	IBOutlet NSMenuItem			*_showGPSDetails;
     
     IBOutlet NSPopUpButton      *_trafficTimePopUp;
     IBOutlet NSPopUpButton      *_trafficModePopUp;
     IBOutlet NSDrawer           *_netHierarchDrawer;
     IBOutlet SpinChannel        *_channelProg;
-	GPSInfoController* _g;
-	NSWindow *borderlessWindow;
 }
 
 - (IBAction)updateNetworkTable:(id)sender complete:(bool)complete;
@@ -172,12 +165,10 @@ io_connect_t  root_port;    // a reference to the Root Power Domain IOService
 @interface ScanController(MenuExtension) 
 - (IBAction)showPrefs:(id)sender;
 
-- (IBAction)importKismetXML:(id)sender;
 - (IBAction)importNetstumbler:(id)sender;
 - (IBAction)importMapFromServer:(id)sender;
 
 - (IBAction)exportNS:(id)sender;
-- (IBAction)exportKMLFile:(id)sender;
 - (IBAction)exportWarD:(id)sender;
 - (IBAction)exportMacstumbler:(id)sender;
 - (IBAction)exportToServer:(id)sender;
@@ -196,22 +187,16 @@ io_connect_t  root_port;    // a reference to the Root Power Domain IOService
 - (IBAction)deautheticateNetwork:(id)sender;
 - (IBAction)deautheticateAllNetworks:(id)sender;
 - (IBAction)authFloodNetwork:(id)sender;
-- (IBAction)monitorSignal:(id)sender;
-- (IBAction)monitorAllNetworks:(id)sender;
 - (IBAction)injectPackets:(id)sender;
 
 - (IBAction)restartGPS:(id)sender;
 - (IBAction)showCurNetArea:(id)sender;
 - (IBAction)showAllNetArea:(id)sender;
-- (IBAction)displayGPSInfo:(id)sender;
-
 
 - (IBAction)closeActiveWindow:(id)sender;
 
 - (IBAction)openWebsiteURL:(id)sender;
 - (IBAction)openDonateURL:(id)sender;
-- (IBAction)openForumsURL:(id)sender;
-- (IBAction)openFAQURL:(id)sender;
 - (IBAction)showContextHelp:(id)sender;
 
 - (IBAction)debugSaveStressTest:(id)sender;
@@ -219,6 +204,8 @@ io_connect_t  root_port;    // a reference to the Root Power Domain IOService
 - (IBAction)debugBeaconFlood:(id)sender;
 - (IBAction)debugTestWPAHashingFunction:(id)sender;
 - (IBAction)debugExportTrafficView:(id)sender;
+
 void NotifySleep( void * refCon, io_service_t service,
                       natural_t messageType, void * messageArgument );
+
 @end

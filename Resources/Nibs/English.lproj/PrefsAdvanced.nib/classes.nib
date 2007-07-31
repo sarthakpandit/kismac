@@ -10,10 +10,7 @@
                 "bf_interval" = id; 
                 bpfdevice = id; 
                 bpfloc = id; 
-                kismetserverip = id; 
-                kismetserverport = id; 
                 "pr_interval" = id; 
-                "show_debugmenu" = id; 
             }; 
             SUPERCLASS = PrefsClient; 
         }, 

@@ -39,7 +39,7 @@ public:
     bool    setChannel(UInt16 channel);
     bool    devicePresent();
     
-    WLFrame *receiveFrame();
+    WLFrame *recieveFrame();
     bool    sendFrame(UInt8* data);
     
     void    startMatching();
@@ -101,7 +101,7 @@ private:
     CFRunLoopSourceRef		_runLoopSource;
     io_iterator_t		_deviceAddedIter;
     io_iterator_t		_deviceRemovedIter;
-    IOUSBInterfaceInterface192**   _interface;
+    IOUSBInterfaceInterface**   _interface;
     union _usbout               _outputBuffer;
     union _usbin                _inputBuffer;
     union _usbin                _recieveBuffer;

@@ -2,12 +2,7 @@
     IBClasses = (
         {CLASS = ColoredRowOutlineView; LANGUAGE = ObjC; SUPERCLASS = NSOutlineView; }, 
         {CLASS = ColoredRowTableView; LANGUAGE = ObjC; SUPERCLASS = NSTableView; }, 
-        {
-            ACTIONS = {"" = id; }; 
-            CLASS = FirstResponder; 
-            LANGUAGE = ObjC; 
-            SUPERCLASS = NSObject; 
-        }, 
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
         {
             ACTIONS = {setValueForSender = id; }; 
             CLASS = PrefsClient; 
@@ -20,7 +15,6 @@
                 enableAEForever = id; 
                 selAddDriver = id; 
                 selAll = id; 
-                selConfigure = id; 
                 selNone = id; 
                 selRemoveDriver = id; 
             }; 
@@ -28,23 +22,15 @@
             LANGUAGE = ObjC; 
             OUTLETS = {
                 "_aeForever" = NSButton; 
-                "_chanhop" = NSBox; 
                 "_channelSel" = NSMatrix; 
                 "_driver" = NSPopUpButton; 
                 "_driverTable" = NSTableView; 
                 "_dumpDestination" = NSTextField; 
                 "_dumpFilter" = NSMatrix; 
-                "_dumpFilterBox" = NSBox; 
                 "_firstChannel" = NSTextField; 
                 "_frequence" = NSTextField; 
-                "_globalsettings" = NSBox; 
-                "_injection" = NSBox; 
                 "_injectionDevice" = NSButton; 
-                "_kdrone_settings" = NSBox; 
-                "_kismet_host" = NSTextField; 
-                "_kismet_port" = NSTextField; 
                 "_removeDriver" = NSButton; 
-                "_savedumpsat" = NSBox; 
                 "_selAll" = NSButton; 
                 "_selNone" = NSButton; 
             }; 

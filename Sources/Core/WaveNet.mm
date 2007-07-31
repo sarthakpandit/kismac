@@ -43,14 +43,6 @@
 
 #define min(a, b)	(a) < (b) ? a : b
 
-
-int _numMidi;
-NoteAllocator   na, na2;
-NoteChannel     nc, nc2;
-NoteRequest     nr, nr2;
-NSString *trackString,*trackStringClient;
-
-
 struct graphStruct zeroGraphData;
 
 struct signalCoords {
@@ -73,21 +65,14 @@ int lengthSort(id string1, id string2, void *context)
 @implementation WaveNet
 
 -(id)initWithID:(int)netID {
-    waypoint cp;
-    GPSController *gpsc;
-
     self = [super init];
     
     if (!self) return nil;
     
     _dataLock = [[NSRecursiveLock alloc] init];
     [_dataLock lock];
-	// we should only create a _netView for this network if we have the information to see it
-	// check with GPSController if we have a location or not!
-	gpsc = [WaveHelper gpsController];
-	cp = [gpsc currentPoint];    
-	if (cp._lat != 100) _netView = [[NetView alloc] initWithNetwork:self];
-	
+    _netView = [[NetView alloc] initWithNetwork:self];
+    
     _ID = nil;
 	graphData = &zeroGraphData;
 	
@@ -225,13 +210,11 @@ int lengthSort(id string1, id string2, void *context)
     if (_primaryChannel == 0) _primaryChannel = _channel;
     _gotData = NO;
     
-    if (wp._long != 100) {
-		_netView = [[NetView alloc] initWithNetwork:self];
-		[_netView setWep:_isWep];
-		[_netView setName:_SSID];
-		[_netView setCoord:wp];
-	}
-	
+    _netView = [[NetView alloc] initWithNetwork:self];
+    [_netView setWep:_isWep];
+    [_netView setName:_SSID];
+    [_netView setCoord:wp];
+    
     _firstPacket = NO;
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateSettings:) name:KisMACUserDefaultsChanged object:nil];
@@ -298,13 +281,11 @@ int lengthSort(id string1, id string2, void *context)
     wp._long = ew_coord * (ew_dir == 'E' ? 1.0 : -1.0);
     wp._elevation = 0;
 
-	if (!(wp._long == 100 || (wp._lat == 0 && wp._long == 0))) {
-		_netView = [[NetView alloc] initWithNetwork:self];
-		[_netView setWep:_isWep];
-		[_netView setName:_SSID];
-		[_netView setCoord:wp];
-	}
-		
+    _netView = [[NetView alloc] initWithNetwork:self];
+    [_netView setWep:_isWep];
+    [_netView setName:_SSID];
+    [_netView setCoord:wp];
+    
     _packetsLog = [[NSMutableArray arrayWithCapacity:20] retain];
     _ARPLog  = [[NSMutableArray arrayWithCapacity:20] retain];
     _ACKLog  = [[NSMutableArray arrayWithCapacity:20] retain];
@@ -332,7 +313,6 @@ int lengthSort(id string1, id string2, void *context)
 
 - (id)initWithDataDictionary:(NSDictionary*)dict {
     waypoint wp;
-    char ns_dir, ew_dir;
     int bssid[6];
     NSData *data;
     NSMutableDictionary *clients;
@@ -370,9 +350,6 @@ int lengthSort(id string1, id string2, void *context)
     wp._lat = [[dict objectForKey:@"lat"] doubleValue];
     wp._long = [[dict objectForKey:@"long"] doubleValue];
     wp._elevation = [[dict objectForKey:@"elev"] doubleValue];
-    
-    (wp._lat < 0) ? ns_dir = 'S' :  ns_dir = 'N';
-    (wp._lat < 0) ? ew_dir = 'W' :  ew_dir = 'E';
     
     _ID=[[dict objectForKey:@"ID"] retain];
     if (_ID!=Nil && sscanf([_ID cString], "%2X%2X%2X%2X%2X%2X", &bssid[0], &bssid[1], &bssid[2], &bssid[3], &bssid[4], &bssid[5])!=6) {
@@ -435,12 +412,12 @@ int lengthSort(id string1, id string2, void *context)
 	aComment = [[dict objectForKey:@"comment"] retain];
     if (!aComment) aComment = [[NSString stringWithString:@""] retain];
     aLat = [[dict objectForKey:@"latString"] retain];
-    if (!aLat) aLat = [[NSString stringWithFormat:@"%f%c", wp._lat, ns_dir] retain];
+    if (!aLat) aLat = [[NSString stringWithString:@""] retain];
     aLong = [[dict objectForKey:@"longString"] retain];
-    if (!aLong) aLong = [[NSString stringWithFormat:@"%f%c", wp._long, ew_dir] retain];
+    if (!aLong) aLong = [[NSString stringWithString:@""] retain];
     aElev = [[dict objectForKey:@"elevString"] retain];
-    if (!aElev) aElev = [[NSString stringWithFormat:@"%.1f", (wp._elevation * 3.2808399)] retain];
-    
+    if (!aElev) aElev = [[NSString stringWithString:@""] retain];
+
 	_coordinates = [[dict objectForKey:@"coordinates"] retain];
     if (!_coordinates) _coordinates = [[NSMutableDictionary dictionary] retain];
     else {
@@ -466,13 +443,11 @@ int lengthSort(id string1, id string2, void *context)
     if (_primaryChannel == 0) _primaryChannel = _channel;
     _gotData = NO;
     
-	if(wp._long != 100) {
-		_netView = [[NetView alloc] initWithNetwork:self];
-		[_netView setWep:_isWep];
-		[_netView setName:_SSID];
-		[_netView setCoord:wp];
-	}
-	
+    _netView = [[NetView alloc] initWithNetwork:self];
+    [_netView setWep:_isWep];
+    [_netView setName:_SSID];
+    [_netView setCoord:wp];
+    
     _firstPacket = NO;
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateSettings:) name:KisMACUserDefaultsChanged object:nil];
@@ -612,11 +587,8 @@ int lengthSort(id string1, id string2, void *context)
 		[WaveHelper secureReplace:&_SSID withObject:@""];
 	} else {
 		[WaveHelper secureReplace:&_SSID withObject:newSSID];
-		if (updatedSSID) {
-			[GrowlController notifyGrowlSSIDRevealed:@"" BSSID:_BSSID SSID:newSSID];
-		}
 	}
-
+	
 	[_netView setName:_SSID];
 	if (!_firstPacket) [[NSNotificationCenter defaultCenter] postNotificationName:KisMACViewItemChanged object:self];
 
@@ -659,14 +631,14 @@ int lengthSort(id string1, id string2, void *context)
 		//after the first packet we should play some sound 
 		if (_date == Nil) {
 			if (cp._lat != 100) {
-				// we have a new network with a GPS position - initialise _netView
+				// we have a GPS position and this is the first time we've seen the network - initialise _netView
 				_netView = [[NetView alloc] initWithNetwork:self];
 				[_netView setWep:_isWep];
-				if (_SSID==Nil) [_netView setName:_BSSID]; // use BSSID for map label
+				if (_SSID==Nil) [_netView setName:_BSSID]; //draw BSSID into the map
 				else [_netView setName:_SSID];
 				[_netView setCoord:cp];
 			}
-						
+			
 			if (_isWep >= encryptionTypeWEP) [[NSSound soundNamed:[[NSUserDefaults standardUserDefaults] objectForKey:@"WEPSound"]] play];
 			else [[NSSound soundNamed:[[NSUserDefaults standardUserDefaults] objectForKey:@"noWEPSound"]] play];
 			
@@ -697,25 +669,17 @@ int lengthSort(id string1, id string2, void *context)
             if ((v==Nil) || ([v intValue]<_curSignal))
                 [_coordinates setObject:[NSNumber numberWithInt:_curSignal] forKey:pV];
             [pV release];
-			if(_curSignal>=_maxSignal || ([aLat floatValue] == 0)) {
-				if(!_netView) {
-					// we didn't have a GPS position when this was first found, so initialise _netView now
-					NSLog(@"First GPS fix for net %@ - initialising",_BSSID);
-					_netView = [[NetView alloc] initWithNetwork:self];
-					[_netView setWep:_isWep];
-					if (_SSID==Nil) [_netView setName:_BSSID]; // use BSSID for map label
-					else [_netView setName:_SSID];
-				}
-				gpsc = [WaveHelper gpsController];
-				s = [gpsc NSCoord];
-				if (s) [WaveHelper secureReplace:&aLat withObject:s];
-				s = [gpsc EWCoord];
-				if (s) [WaveHelper secureReplace:&aLong withObject:s];
-				s = [gpsc ElevCoord];
-				if (s) [WaveHelper secureReplace:&aElev withObject:s];
-				[_netView setCoord:cp];
-			}
         }
+		if(_curSignal>=_maxSignal || ([aLat floatValue] == 0 && [aLong floatValue] == 0)) {
+            gpsc = [WaveHelper gpsController];
+            s = [gpsc NSCoord];
+            if (s) [WaveHelper secureReplace:&aLat withObject:s];
+            s = [gpsc EWCoord];
+            if (s) [WaveHelper secureReplace:&aLong withObject:s];
+            s = [gpsc ElevCoord];
+            if (s) [WaveHelper secureReplace:&aElev withObject:s];
+			[_netView setCoord:cp];
+		}
     }
     
     if(_curSignal>=_maxSignal) _maxSignal=_curSignal;
@@ -831,56 +795,9 @@ int lengthSort(id string1, id string2, void *context)
         graphData->trafficData[graphLength] += [w length];
         graphData->packetData[graphLength] += 1;
         curSignalData += _curSignal;
-		
-		// themacuser - sounds here
-		
-		 if (([[w BSSIDString] isEqualToString:trackString] || [trackString isEqualToString:@"any"]) && ([[w clientFromID] isEqualToString:trackStringClient] || [trackStringClient isEqualToString:@"any"])) {
-			
-			if (_numMidi == 200)
-			{
-				[self openChannel2:7];
-			}
-			
-			if (_numMidi == 255)
-			{
-				_numMidi = 0;
-				[self closeChannel];
-				na = na2;
-				nc = nc2;
-				nr = nr2;
-			}
-			
-			if (!nc || !na)
-			{
-				ComponentResult  thisError;
-				na = 0;
-				nc = 0;
-				// Open up the note allocator.
-				na = OpenDefaultComponent(kNoteAllocatorComponentType, 0);
-				if (!na)
-					NSLog(@"Error initializing QuickTime Component");
-				
-				BigEndianShort s = (BigEndianShort){EndianS16_NtoB(8)};
-				BigEndianFixed f = (BigEndianFixed){EndianS16_NtoB(0x00010000)};
-				
-				// Fill out a NoteRequest using NAStuffToneDescription to help, and
-				// allocate a NoteChannel.
-				nr.info.flags = 0;
-				nr.info.polyphony = s;   // simultaneous tones
-				nr.info.typicalPolyphony = f; // usually just one note
-				thisError = NAStuffToneDescription(na, 7, &nr.tone); // 1 is piano
-				thisError = NANewNoteChannel(na, &nr, &nc);			
-			}
-
-		[self playChord:_curSignal];
-		_numMidi++;
-		//	[self closeChannel];
-		}
-		
         curPacketData++;
         curTrafficData += [w length];
     }
-
     
     if (_BSSID==Nil) {
         _BSSID=[[NSString stringWithString:[w BSSIDString]] retain];
@@ -935,7 +852,7 @@ int lengthSort(id string1, id string2, void *context)
 							NSAssert(_ivData[body[3]], @"unable to allocate weak container");
 						}
                         @synchronized (_ivData[body[3]]) {
-                            [_ivData[body[3]] setBytes:&body[4] forIV:&body[0]];//look here!
+                            [_ivData[body[3]] setBytes:&body[4] forIV:&body[0]];
                         }
                     }
                 }
@@ -1004,55 +921,8 @@ int lengthSort(id string1, id string2, void *context)
         _BSSID = [[NSString stringWithFormat:@"%.2X:%.2X:%.2X:%.2X:%.2X:%.2X", _rawBSSID[0], _rawBSSID[1], _rawBSSID[2],
                 _rawBSSID[3], _rawBSSID[4], _rawBSSID[5]] retain];
     }
-	
-	if ([_BSSID isEqualToString:trackString] || [trackString isEqualToString:@"any"]) {
-		
-		if (_numMidi == 200)
-		{
-			[self openChannel2:7];
-		}
-		
-		if (_numMidi == 255)
-		{
-			_numMidi = 0;
-			[self closeChannel];
-			na = na2;
-			nc = nc2;
-			nr = nr2;
-		}
-		
-		if (!nc || !na)
-		{
-			ComponentResult  thisError;
-			na = 0;
-			nc = 0;
-			// Open up the note allocator.
-			na = OpenDefaultComponent(kNoteAllocatorComponentType, 0);
-			if (!na)
-				NSLog(@"Error initializing QuickTime Component");
-			
-			BigEndianShort s = (BigEndianShort){EndianS16_NtoB(8)};
-			BigEndianFixed f = (BigEndianFixed){EndianS16_NtoB(0x00010000)};
-			
-			// Fill out a NoteRequest using NAStuffToneDescription to help, and
-			// allocate a NoteChannel.
-			nr.info.flags = 0;
-			nr.info.polyphony = s;   // simultaneous tones
-			nr.info.typicalPolyphony = f; // usually just one note
-			thisError = NAStuffToneDescription(na, 7, &nr.tone); // 1 is piano
-			thisError = NANewNoteChannel(na, &nr, &nc);			
-		}
-		
-		[self playChord:_curSignal];
-		_numMidi++;
-		//	[self closeChannel];
-	}
-	
-	
-	
-	
-    
-	_curSignal = [[info objectForKey:@"signal"] intValue] - [[info objectForKey:@"noise"] intValue];
+        
+    _curSignal = [[info objectForKey:@"signal"] intValue] - [[info objectForKey:@"noise"] intValue];
     if (_curSignal<0) _curSignal = 0;
     
     _primaryChannel = _channel = [[info objectForKey:@"channel"] intValue];
@@ -1084,10 +954,6 @@ int lengthSort(id string1, id string2, void *context)
     } else if (flags & IEEE80211_CAPINFO_IBSS_LE) {
         _type = networkTypeAdHoc;
     }
-	
-	if (flags & IEEE80211_CAPINFO_PROBE_REQ_LE) {
-		_type = networkTypeProbe;
-	}
 
     [_dataLock lock];
     [self updateSSID:[info objectForKey:@"name"] withSound:YES];
@@ -1806,8 +1672,6 @@ typedef int (*SORTFUNC)(id, id, void *);
     [NSThread detachNewThreadSelector:@selector(doReinjectWithScanner:) toTarget:self withObject:scanner];
 }
 
-
-
 #pragma mark -
 
 - (void)dealloc {
@@ -1848,58 +1712,5 @@ typedef int (*SORTFUNC)(id, id, void *);
 	
     [super dealloc];
 }
-
-- (void)openChannel2:(int)note {
-	ComponentResult  thisError;
-    na2 = 0;
-    nc2 = 0;
-    // Open up the note allocator.
-    na2 = OpenDefaultComponent(kNoteAllocatorComponentType, 0);
-    if (!na2)
-		NSLog(@"Error initializing QuickTime Component");
-	
-	BigEndianShort s = (BigEndianShort){EndianS16_NtoB(8)};
-	BigEndianFixed f = (BigEndianFixed){EndianS16_NtoB(0x00010000)};
-	
-    // Fill out a NoteRequest using NAStuffToneDescription to help, and
-    // allocate a NoteChannel.
-    nr2.info.flags = 0;
-    nr2.info.polyphony = s;   // simultaneous tones
-    nr2.info.typicalPolyphony = f; // usually just one note
-    thisError = NAStuffToneDescription(na2, note, &nr2.tone); // 1 is piano
-    thisError = NANewNoteChannel(na2, &nr2, &nc2); 	
-}
-
-
-
-- (void) playChord:(int)note{
-	int the_note = note; //  middle C == 60
-	NAPlayNote(na, nc, the_note, 127);     // note at velocity 80
-	[NSThread sleepUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
-	the_note = 60 + 0 - 13;
-	NAPlayNote(na, nc, the_note, 0);     // note at velocity 80
-	
-}
-
-- (void)closeChannel {
-	if (nc)
-		NADisposeNoteChannel(na, nc);
-	if (na)
-		CloseComponent(na);
-	
-}
-
-+ (void)setTrackString:(NSString*)cs{
-	 [WaveHelper secureReplace:&trackString withObject:cs];
-}
-
-+ (void)setTrackStringClient:(NSString*)cs{
-	[WaveHelper secureReplace:&trackStringClient withObject:cs];
-}
-
-+ (NSString*)trackString{
-	return trackString;
-}
-
 
 @end

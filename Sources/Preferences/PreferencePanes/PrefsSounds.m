@@ -59,12 +59,10 @@
         [controller setObject:@"None" forKey:@"WEPSound"];
         [controller setObject:@"None" forKey:@"noWEPSound"];
         [controller setObject:@"None" forKey:@"GeigerSound"];
-		[controller setObject:[NSNumber numberWithBool:TRUE] forKey:@"playCrackSounds"];
     }
     [aGeigerSounds selectItemWithTitle:[controller objectForKey:@"GeigerSound"]];
     [aWEPSounds selectItemWithTitle:[controller objectForKey:@"WEPSound"]];
     [aNOWEPSounds selectItemWithTitle:[controller objectForKey:@"noWEPSound"]];
-	[useSounds setState:[[controller objectForKey:@"playCrackSounds"] intValue]];
 
     [aVoices selectItemAtIndex:[[controller objectForKey:@"Voice"] intValue]];
 }
@@ -96,9 +94,6 @@
     }
     else if (sender == aGeigerSensity) {
         [controller setObject:[NSNumber numberWithInt:[sender intValue]] forKey:@"GeigerSensity"];
-    }
-    else if (sender == useSounds) {
-        [controller setObject:[NSNumber numberWithBool:[sender state]] forKey:@"playCrackSounds"];
     }
     else {
         NSLog(@"Error: Invalid sender(%@) in setValueForSender:",sender);

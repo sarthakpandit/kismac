@@ -73,7 +73,6 @@ NSString *const KisMACGPSStatusChanged      = @"KisMACGPSStatusChanged";
         @"None", @"WEPSound",
         @"None", @"noWEPSound",
         @"None", @"GeigerSound",
-		[NSNumber numberWithBool:TRUE], @"playCrackSounds",
         @"", @"GPSDevice",
         [NSNumber numberWithInt:2], @"GPSTrace",
         [NSNumber numberWithInt:0], @"GPSNoFix",
@@ -645,18 +644,6 @@ void NotifySleep( void * refCon, io_service_t service,
             break;
             
     }
-}
-
-- (void)trackClient:(id)sender {
-	[_monitorMenu setState:NSOnState];
-	[_monitorAllMenu setState:NSOffState];
-	NSString *bssid, *mac;
-	bssid = [_curNet BSSID];
-	mac = [aInfoController theRow];
-	[_monitorMenu setTitle:[NSString stringWithFormat:@"%@ %@ - %@",NSLocalizedString(@"Monitoring ", "menu item"), bssid, mac]];
-	[WaveNet setTrackString:bssid];
-	[WaveNet setTrackStringClient:mac];
-
 }
 
 @end

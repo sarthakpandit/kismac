@@ -16,7 +16,6 @@
 	[bpfdevice setStringValue:[controller objectForKey:@"bpfdevice"]];
 	[bpfloc setStringValue:[controller objectForKey:@"bpfloc"]];
 	[pr_interval setIntValue:[[controller objectForKey:@"pr_interval"] intValue]];
-	[show_debugmenu setState:[[controller objectForKey:@"DebugMode"] intValue]];
 }
 
 -(BOOL)updateDictionary {
@@ -25,7 +24,6 @@
 	[controller setObject:[bpfdevice stringValue] forKey:@"bpfdevice"];
 	[controller setObject:[bpfloc stringValue] forKey:@"bpfloc"];
 	[controller setObject:[NSNumber numberWithInt:[pr_interval intValue]] forKey:@"pr_interval"];
-	[controller setObject:[NSNumber numberWithInt:[show_debugmenu state]] forKey:@"DebugMode"];
     return YES;
 }
 
@@ -40,8 +38,6 @@
 		[controller setObject:[bpfloc stringValue] forKey:@"bpfloc"];
     } else if(sender == pr_interval) {
        [controller setObject:[NSNumber numberWithInt:[pr_interval intValue]] forKey:@"pr_interval"];
-	} else if(sender == show_debugmenu) {
-		[controller setObject:[NSNumber numberWithInt:[show_debugmenu state]] forKey:@"DebugMode"];
 	} else {
         NSLog(@"Error: Invalid sender(%@) in setValueForSender:",sender);
     }
@@ -53,7 +49,6 @@
 	[bpfdevice setStringValue:@"wlt1"];
 	[bpfloc setStringValue:@"/dev/bpf0"];
 	[pr_interval setIntValue:100];
-	[show_debugmenu setState:NSOffState];
 }
 
 @end
