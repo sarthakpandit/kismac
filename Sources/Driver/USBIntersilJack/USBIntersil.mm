@@ -71,10 +71,9 @@ static struct identStruct devices[] = {
     { 0x9016, 0x182d}, //30 Sitecom WL-022 - new version
 	{ 0x0707, 0xee04}, //31 SMC WUSB32
 	{ 0x1915, 0x2236}, //32 WUSB11 version 3.0
-    { 0x083a, 0x3503}, //33 T-Sinus 111 data
 };
 
-#define dDeviceCount 33
+#define dDeviceCount 32
 
 #define dbgOutPutBuf(a) NSLog( @"0x%.4x 0x%.4x 0x%.4x 0x%.4x%.4x", NSSwapLittleShortToHost(*((UInt16*)&(a) )), NSSwapLittleShortToHost(*((UInt16*)&(a)+1)), NSSwapLittleShortToHost(*((UInt16*)&(a)+2)), NSSwapLittleShortToHost(*((UInt16*)&(a)+3)), NSSwapLittleShortToHost(*((UInt16*)&(a)+4)) );
 
@@ -186,7 +185,7 @@ bool USBIntersilJack::devicePresent() {
     return _devicePresent;
 }
 
-WLFrame *USBIntersilJack::receiveFrame() {
+WLFrame *USBIntersilJack::recieveFrame() {
     WLFrame* ret;
     
     if (!_devicePresent) return NULL;
@@ -599,7 +598,7 @@ IOReturn USBIntersilJack::_writeWaitForResponse(UInt32 size) {
         kr = (*_interface)->WritePipe(_interface, kOutPipe, &_outputBuffer, size);
         if (kr != kIOReturnSuccess) {
             if (kr==wlcDeviceGone) _devicePresent = false;
-            NSLog(@"USBIntersilJack::unable to write to USB Device(%08x)\n", kr);
+            else NSLog(@"USBIntersilJack::unable to write to USB Device(%08x)\n", kr);
             return kr;
         }
 
@@ -629,13 +628,7 @@ void USBIntersilJack::_interruptRecieved(void *refCon, IOReturn result, int len)
             pthread_mutex_unlock(&me->_recv_mutex);
             return;
         } else {
-            if (result == kIOReturnOverrun) {  //for some reason we overran the device buffer
-                NSLog(@"USBIntersilJack::Data overrun, attempting to clear the pipe stall");
-                result = (*me->_interface)->ClearPipeStallBothEnds(me->_interface, kInPipe);  //3 appears to be the interrupt pipe
-            }
-            else {
-                 NSLog(@"USBIntersilJack::Unhandled error from async interrupt recieved, please report on http://trac.kismac.de (%08x)\n", result);
-            }
+            NSLog(@"error from async interruptRecieved (%08x)\n", result);
             if (me->_devicePresent) goto readon;
         }
     }
@@ -713,21 +706,13 @@ readon:
     bzero(&me->_recieveBuffer, sizeof(me->_recieveBuffer));
     kr = (*me->_interface)->ReadPipeAsync((me->_interface), kInPipe, &me->_recieveBuffer, sizeof(me->_recieveBuffer), (IOAsyncCallback1)_interruptRecieved, refCon);
     if (kIOReturnSuccess != kr) {
-        NSLog(@"USBIntersilJack::Unable to do async interrupt read (%08x). The card is stopped!\n", kr);
-        if (kr == kIOReturnNoDevice) {
-            NSLog(@"USBIntersilJack::There is no connection to an IOService,");
-            me->_devicePresent = false;
-        }
-        if (kr == kIOReturnNotOpen) {
-            NSLog(@"USBIntersilJack::Pipe not open for exclusive access.");
-            me->_devicePresent = false;
-        }
-        //we should never get here because some devices don't like to be inited more than once, however this might do something good 
+        NSLog(@"unable to do async interrupt read (%08x). this means the card is stopped!\n", kr);
 		// I haven't been able to reproduce the error that caused it to hit this point in the code again since adding the following lines
 		// however, when it hit this point previously, the only solution was to kill and relaunch KisMAC, so at least this won't make anything worse
 		NSLog(@"Attempting to re-initialise adapter...");
 		if (me->_init() != kIOReturnSuccess) NSLog(@"USBIntersilJack::_interruptReceived: _init() failed\n");
     }
+        
 }
 
 #pragma mark -
@@ -762,7 +747,7 @@ IOReturn USBIntersilJack::_findInterfaces(void *refCon, IOUSBDeviceInterface **d
     io_iterator_t		iterator;
     io_service_t		usbInterface;
     IOCFPlugInInterface 	**plugInInterface = NULL;
-    IOUSBInterfaceInterface192 	**intf = NULL;
+    IOUSBInterfaceInterface 	**intf = NULL;
     HRESULT 			res;
     SInt32 			score;
     UInt8			intfClass;

@@ -26,7 +26,6 @@
             SUPERCLASS = NSScrollView; 
         }, 
         {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
-        {CLASS = GPSInfoController; LANGUAGE = ObjC; SUPERCLASS = NSWindowController; }, 
         {
             ACTIONS = {commentChanged = id; showNet = id; }; 
             CLASS = InfoController; 
@@ -107,7 +106,6 @@
                 authFloodNetwork = id; 
                 changeSearchType = id; 
                 changeSearchValue = id; 
-                checkFilter = id; 
                 clearNetwork = id; 
                 closeActiveWindow = id; 
                 deautheticateAllNetworks = id; 
@@ -117,32 +115,27 @@
                 debugSaveStressTest = id; 
                 debugTestWPAHashingFunction = id; 
                 decryptPCAPFile = id; 
-                displayGPSInfo = id; 
                 exportJPEG = id; 
-                exportKMLFile = id; 
+                exportKML = id; 
                 exportMacstumbler = id; 
                 exportNS = id; 
                 exportPDF = id; 
                 exportToServer = id; 
                 exportWarD = id; 
-                goFullscreen = id; 
                 gpsDebugToConsole = id; 
-                importKismetXML = id; 
                 importMapFromServer = id; 
                 importNetstumbler = id; 
                 injectPackets = id; 
                 joinNetwork = id; 
-                monitorAllNetworks = id; 
-                monitorSignal = id; 
                 openDonateURL = id; 
-                openFAQURL = id; 
-                openForumsURL = id; 
+                openPCAPInEthereal = id; 
                 openWebsiteURL = id; 
                 restartGPS = id; 
                 selChannel = id; 
                 selChannelRange = id; 
                 setAutoAdjustTimer = id; 
                 showAllNetArea = id; 
+                showClient = id; 
                 showContextHelp = id; 
                 showCurNetArea = id; 
                 showInfo = id; 
@@ -161,24 +154,20 @@
                 "_detailsButton" = NSButton; 
                 "_detailsDrawerMenu" = NSMenuItem; 
                 "_detailsView" = NSView; 
-                "_fullscreen" = NSMenuItem; 
                 "_headerField" = NSTextField; 
                 "_mainView" = NSBox; 
                 "_mapButton" = NSButton; 
                 "_mapView" = NSView; 
                 "_mappingView" = MapView; 
-                "_monitorAllMenu" = NSMenuItem; 
-                "_monitorMenu" = NSMenuItem; 
                 "_netHierarchDrawer" = NSDrawer; 
                 "_networkTable" = ColoredRowTableView; 
                 "_networkView" = NSView; 
                 "_networksButton" = NSButton; 
                 "_scanButton" = AMRollOverButton; 
                 "_searchField" = NSSearchField; 
-                "_searchTypeMenu" = NSPopUpButton; 
+                "_searchTypeMenu" = id; 
                 "_showAllNetsInMap" = NSMenuItem; 
                 "_showDetails" = NSMenuItem; 
-                "_showGPSDetails" = NSMenuItem; 
                 "_showHierarch" = NSMenuItem; 
                 "_showMap" = NSMenuItem; 
                 "_showNetInMap" = NSMenuItem; 
@@ -197,12 +186,12 @@
                 aChannelMenu = NSMenu; 
                 aCrackMenu = NSMenu; 
                 aDetailsTable = ColoredRowTableView; 
-                aGrowlController = GrowlController; 
                 aInfoController = InfoController; 
                 aInjPacketsMenu = NSMenuItem; 
                 aNetworkMenu = NSMenu; 
                 aOutView = NSOutlineView; 
                 detailsView = NSView; 
+                myOutlet = id; 
                 prefsController = PrefsController; 
                 prefsWindow = NSWindow; 
                 scanner = WaveScanner; 

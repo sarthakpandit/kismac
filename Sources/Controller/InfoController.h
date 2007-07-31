@@ -36,7 +36,6 @@
     NSArray *aClientKeys;
     NSDictionary *aClients;
     NSString *_lastSorted;
-	NSString* selectedRow;
     
     IBOutlet NSTableView* aShortTable;
     IBOutlet NSTableView* aTable;
@@ -48,5 +47,4 @@
 - (IBAction)showNet:(id)sender;
 - (IBAction)commentChanged:(id)sender;
 - (void)reloadData;
-- (NSString *) theRow;
 @end

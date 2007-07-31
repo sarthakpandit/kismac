@@ -61,7 +61,6 @@ enum _rowIndexes {
 - (void)awakeFromNib {
     _clientCount = 0;
     [aShortTable setHeaderView:nil];
-	[aClientTable setDoubleAction:@selector(trackClient:)];
 }
 
 - (void)setDetails:(bool)visible {
@@ -317,6 +316,7 @@ objectValueForTableColumn:(NSTableColumn *) aTableColumn
     }
 }
 
+
 #pragma mark -
 
 -(void) dealloc {
@@ -325,9 +325,4 @@ objectValueForTableColumn:(NSTableColumn *) aTableColumn
     if (_n!=nil) [_n release];
     [super dealloc];
 }
-
-- (NSString *) theRow {
-	return [aClientKeys objectAtIndex:[aClientTable selectedRow]];
-}
-
 @end

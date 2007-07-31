@@ -26,7 +26,6 @@
 #import "WaveClient.h"
 #import "WaveHelper.h"
 #import "WPA.h"
-#import "GrowlController.h"
 
 @implementation WaveClient
 
@@ -124,12 +123,10 @@
         switch ([w wpaCopyNonce:nonce]) {
             case wpaNonceANonce:
                 NSLog(@"Detected WPA challenge for %@!", _ID);
-				[GrowlController notifyGrowlWPAChallenge:@"" mac:_ID bssid:[w BSSIDString]];
                 [WaveHelper secureReplace:&_aNonce withObject:[NSData dataWithBytes:nonce length:WPA_NONCE_LENGTH]];
                 break;
             case wpaNonceSNonce:
                 NSLog(@"Detected WPA response for %@!", _ID);
-				[GrowlController notifyGrowlWPAResponse:@"" mac:_ID bssid:[w BSSIDString]];
                 [WaveHelper secureReplace:&_sNonce withObject:[NSData dataWithBytes:nonce length:WPA_NONCE_LENGTH]];
                 break;
             case wpaNonceNone:

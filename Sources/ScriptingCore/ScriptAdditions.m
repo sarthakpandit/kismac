@@ -76,10 +76,6 @@
 - (id)importPCAP:(NSScriptCommand *)command {
     return [NSNumber numberWithBool:[(ScanController*)[NSApp delegate] importPCAP:[command directParameter]]];
 }
-- (id)exportKML:(NSScriptCommand *)command {
-    return [NSNumber numberWithBool:[(ScanController*)[NSApp delegate] exportKML:[command directParameter]]];
-}
-
 
 - (id)downloadMap:(NSScriptCommand*)command {
     NSDictionary *args = [command arguments];

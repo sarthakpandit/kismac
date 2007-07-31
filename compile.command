@@ -86,7 +86,7 @@ echo "ok"
 cd ..
 
 echo -n "Determine Subversion Revision... "
-SVNVERS=`svn info | grep Revision | awk '{print $2}'`
+SVNVERS=`svnversion -n .`
 echo $SVNVERS
 sed -e "s/\\\$Revision.*\\\$/\\\$Revision: $SVNVERS\\\$/" Resources/Info.plist.templ > Resources/Info.plist
 sed -e "s/\\\$Revision.*\\\$/\\\$Revision: $SVNVERS\\\$/" Resources/Strings/English.lproj/InfoPlist.strings.templ > Resources/Strings/English.lproj/InfoPlist.strings
@@ -187,7 +187,7 @@ if [ $BUILD_IMAGE == 1 ]; then
       sleep 10
   fi
   
-	cp image/KisMACraw.sparseimage image/KisMAC.dmg
+	cp image/KisMACraw.dmg image/KisMAC.dmg
 	hdiutil attach image/KisMAC.dmg > /dev/null
 	
 	sleep 1
